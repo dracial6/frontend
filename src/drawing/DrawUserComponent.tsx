@@ -4,7 +4,7 @@ import { DrawAreaViewState } from "./structures";
 import ArrangeDirection from "./structures/ArrangeDirection";
 
 class DrawUserComponent extends React.Component {
-    protected MyDrawArea?: BaseDrawArea;
+    protected MyDrawArea!: BaseDrawArea;
 
     constructor(props: any){
         super(props);
@@ -76,6 +76,10 @@ class DrawUserComponent extends React.Component {
 
     setPageScale(pageScale: number): void {
         if (this.MyDrawArea) this.MyDrawArea.setPageScale(pageScale);
+    }
+
+    getComponentStyle(): CSSStyleDeclaration {
+        return this.MyDrawArea.getComponentStyle();
     }
 }
 

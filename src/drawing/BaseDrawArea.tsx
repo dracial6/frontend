@@ -160,6 +160,10 @@ abstract class BaseDrawArea extends React.Component {
         return this._autoSelectionToFront;
     }
 
+    getComponentStyle(): CSSStyleDeclaration {
+        return this._canvasContext.canvas.style;
+    }
+
     setAutoSelectionToFront(autoSelectionToFront: boolean): void {
         this._autoSelectionToFront = autoSelectionToFront;
         this.getDefaultDrawList().isBringToTop = autoSelectionToFront;
@@ -176,6 +180,7 @@ abstract class BaseDrawArea extends React.Component {
             canvas.onmouseleave = this.onMouseLeave.bind(this);
             canvas.width = 500;
             canvas.height = 500;
+            canvas.style.border = "1px solid #000";
             this._canvasContext = canvas.getContext('2d') as CanvasRenderingContext2D;
             BaseDrawArea._staticCanvasContext = this._canvasContext;
             if (this._canvasContext) {       
