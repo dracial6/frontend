@@ -15,7 +15,7 @@ class MouseUpHandler extends BaseEventHandler {
         if (this.getCurrentOperationMode() === OperationMode.NetSelection) return;
         if (this.getCurrentOperationMode() === OperationMode.Size) return;
 
-        const point = new Point(e.x, e.y);
+        const point = new Point(e.pageX, e.pageY);
         const drawList = drawArea.getDefaultDrawList().getDrawObjectAllVisible(true);
         const clickList: IDrawableGeometry[] = [];
         let clickedGeom: IDrawableGeometry | undefined = undefined;

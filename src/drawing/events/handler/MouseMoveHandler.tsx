@@ -21,16 +21,16 @@ class MouseMoveHandler extends BaseEventHandler {
             this.setCurrentOperationMode(OperationMode.None);
         }
 
-        this._point = new Point(e.x, e.y);
+        this._point = new Point(e.pageX, e.pageY);
 
         this.doNone(drawArea);
         let isContinue = drawArea.isMouseClick();
 
         const tempLastPoint = super.getLastPoint();
-        const dx = e.x - this.getLastPoint().x;
-        const dy = e.y - this.getLastPoint().y;
+        const dx = e.pageX - this.getLastPoint().x;
+        const dy = e.pageY - this.getLastPoint().y;
 
-        super.setLastPoint(e.x, e.y);
+        super.setLastPoint(e.pageX, e.pageY);
 
         if (isContinue) {
             isContinue = this.doResize(drawArea, e);
@@ -58,10 +58,6 @@ class MouseMoveHandler extends BaseEventHandler {
         || drawArea.isDrawableObjectSelect) {
             let cursor = Cursors.default;
             let overObj = undefined;
-
-            if (super.getCurrentOverObject()) {
-                super.setCurrentOverObject(undefined);
-            }
 
             const drawList = drawArea.getDefaultDrawList().getDrawListAtEventHandle();
             const temp = super.getCurrentOverObject();
@@ -291,7 +287,7 @@ class MouseMoveHandler extends BaseEventHandler {
 
     private doDragSelection(drawArea: BaseDrawArea, e: MouseEvent): boolean {
         if (this.getOperationMode() === OperationMode.MouseDown) {
-            if (this.getMouseCheckPoint().x !== e.x || this.getMouseCheckPoint().y !== e.y) {
+            if (this.getMouseCheckPoint().x !== e.pageX || this.getMouseCheckPoint().y !== e.pageY) {
                 this.setOperationMode(OperationMode.NetSelection);
             }
         }
@@ -301,7 +297,7 @@ class MouseMoveHandler extends BaseEventHandler {
             this.setCurrentOperationMode(OperationMode.NetSelection);
 
             if (drawArea.isDrawableObjectDragSelect) {
-                drawArea.setDragLine(drawArea.visibleMouseDragLine, e.x, e.y);
+                drawArea.setDragLine(drawArea.visibleMouseDragLine, e.pageX, e.pageY);
                 return false;
             }
         }

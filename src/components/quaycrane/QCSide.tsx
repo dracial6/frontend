@@ -1,7 +1,7 @@
 import React, {RefObject} from 'react';
 import BaseDrawArea from '../../drawing/BaseDrawArea';
 import DrawArea from '../../drawing/DrawArea';
-import DrawUserComponent from '../../drawing/drawcontainer/DrawUserComponent';
+import DrawUserComponent from '../../drawing/DrawUserComponent';
 import QCSideCabinItem from '../../drawing/drawcontainer/quaycrane/items/QCSideCabinItem';
 import QCSideContainerItem from '../../drawing/drawcontainer/quaycrane/items/QCSideContainerItem';
 import QCSideItem from '../../drawing/drawcontainer/quaycrane/items/QCSideItem';
@@ -38,12 +38,12 @@ class QuayCrane extends DrawUserComponent {
         const drawArea = this._drawAreaRef.current;
         if (drawArea) {
             super.setDrawArea(drawArea);
-            drawArea.setWidth(1000);
-            drawArea.setHeight(1000);
+            drawArea.setWidth(5000);
+            drawArea.setHeight(5000);
             drawArea.isDrawableObjectResize = true;
             drawArea.isDrawableObjectMove = true;
             drawArea.isDrawableObjectMouseOver = true;
-            drawArea.arrangeDirection = ArrangeDirection.LeftToRight;
+            drawArea.arrangeDirection = ArrangeDirection.None;
             drawArea.arrangeFixCount = 2;
             drawArea.drawableObjectClick.addEvent(this.handler.bind(this));
             
@@ -120,7 +120,7 @@ class QuayCrane extends DrawUserComponent {
             const crane = new TCrane(qcItem);
             crane.attribute.outLineColor = Color.Red();
             crane.setCraneVerticalMargin(this.craneVerticalMargin * this.zoomRatio - this.arrangeTopMargin);
-            crane.setLocation(new Point(100, 100));
+            crane.setLocation(new Point(100, 4500));
             crane.rotate(15);
             crane.updateMBR();
             crane.enableResizable = true;

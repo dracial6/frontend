@@ -38,7 +38,7 @@ class DrawableEventManager {
     }
 
     onSelected(drawArea: BaseDrawArea, e: MouseEvent): void {
-        const point = new Point(e.x, e.y);
+        const point = new Point(e.pageX, e.pageY);
         const drawList = drawArea.getDefaultDrawList().getDrawObjectAllVisible(true);
         const clickList: IDrawableGeometry[] = [];
         let clickedGeom: IDrawableGeometry | undefined = undefined;

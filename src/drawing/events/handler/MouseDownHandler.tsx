@@ -19,8 +19,8 @@ class MouseDownHandler extends BaseEventHandler {
     }
 
     doHandling(drawArea: BaseDrawArea, e: MouseEvent): void {
-        this._point = new Point(e.x, e.y);
-        super.setMouseCheckPoint(e.x, e.y);
+        this._point = new Point(e.pageX, e.pageY);
+        super.setMouseCheckPoint(e.pageX, e.pageY);
         super.setOperationMode(OperationMode.None);
         super.setCurrentOperationMode(OperationMode.None);
         
@@ -28,8 +28,8 @@ class MouseDownHandler extends BaseEventHandler {
         this.beginSelect(drawArea, e);
         this.beginNetSelection(drawArea, e);
 
-        super.setLastPoint(e.x, e.y);
-        super.setStartPoint(e.x, e.y);
+        super.setLastPoint(e.pageX, e.pageY);
+        super.setStartPoint(e.pageX, e.pageY);
     }
 
     private beginResize(drawArea: BaseDrawArea, e: MouseEvent): void {

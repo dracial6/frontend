@@ -158,9 +158,9 @@ abstract class BaseDrawableObject extends BaseGeometry implements IDrawableMouse
                 if ((this.enableResizeVertex & (1 << (i - 1))) === 0) {
                     resizable = false;
                 }
-                DrawableUtil.drawTracker(ctx, resizable, this.enableMove, this.attribute.fillColor, this.getHandleRectangle(i));
+                DrawableUtil.drawTracker(ctx, resizable, this.enableMove, Color.Red(), this.getHandleRectangle(i));
             } else {
-                DrawableUtil.drawTracker(ctx, this.enableResizable, this.enableMove, this.attribute.fillColor, this.getHandleRectangle(i));
+                DrawableUtil.drawTracker(ctx, this.enableResizable, this.enableMove, Color.DarkGray(), this.getHandleRectangle(i));
             }
         }
     }
