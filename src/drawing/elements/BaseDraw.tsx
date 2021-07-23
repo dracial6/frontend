@@ -27,7 +27,7 @@ class BaseDraw implements IBaseGeometry {
     }
     
     getCurrentSize(): Size {
-        return this._currentSize;
+        return new Size(this._currentSize.width, this._currentSize.height);
     }
 
     setCurrentSize(size: Size): void {
@@ -36,15 +36,15 @@ class BaseDraw implements IBaseGeometry {
     }
 
     getLocation(): Point {
-        return this._location;
+        return new Point(this._location.x, this._location.y);
     }
 
     getSize(): Size {
-        return this._size;
+        return new Size(this._size.width, this._size.height);
     }
 
     getCurrentLocation(): Point {
-        return this._currentLocation;
+        return new Point(this._currentLocation.x, this._currentLocation.y);
     }
 
     setLocation(point: Point): void {
@@ -101,7 +101,7 @@ class BaseDraw implements IBaseGeometry {
     }
 
     getDisplayedLocation(): Point {
-        return this._currentLocation;
+        return new Point(this._currentLocation.x, this._currentLocation.y);
     }
 
     applyBaseLocation(baseLocation: Point, drawingDir: DrawingDirection): void {

@@ -1,4 +1,4 @@
-import React, {RefObject} from 'react';
+import React, {useState , RefObject} from 'react';
 import BaseDrawArea from '../../drawing/BaseDrawArea';
 import DrawArea from '../../drawing/DrawArea';
 import DrawUserComponent from '../../drawing/DrawUserComponent';
@@ -14,20 +14,35 @@ import DrawText from '../../drawing/elements/DrawText';
 import GeometryPolygon from '../../drawing/elements/GeometryPolygon';
 import DrawCanvasEventArgs from '../../drawing/events/DrawCanvasEventArgs';
 import TextBoxItem from '../../drawing/items/TextBoxItem';
-import { Color, Point } from '../../drawing/structures';
+import { Color, DrawingDirection, Point } from '../../drawing/structures';
 import ArrangeDirection from '../../drawing/structures/ArrangeDirection';
 import EmptyContainer from './EmptyContainer';
+import GeometryRectangle from '../../drawing/elements/GeometryRectangle';
+import { Guid } from 'guid-typescript';
 
-class QuayCrane extends DrawUserComponent {
+class QuayCrane extends DrawUserComponent {    
+    state = {
+        x: '0',
+        y: '0',
+        rotate: '0'
+    }
+
     private _drawAreaRef: RefObject<DrawArea>;
+    private _drawAreaRef2: RefObject<DrawArea>;
     
+    static defaultProps = {
+        name: ''
+    }
+
     zoomRatio = 1;
     craneVerticalMargin = 0;
     arrangeTopMargin = 10;
 
     constructor(props: any){
         super(props);
+        console.log(props.name);
         this._drawAreaRef = React.createRef();
+        this._drawAreaRef2 = React.createRef();
     }
 
     handler(drawArea: BaseDrawArea, args: DrawCanvasEventArgs): void {
@@ -36,16 +51,22 @@ class QuayCrane extends DrawUserComponent {
 
     componentDidMount() {
         const drawArea = this._drawAreaRef.current;
-        if (drawArea) {
+        const drawArea2 = this._drawAreaRef2.current;
+        if (drawArea && drawArea2) {
             super.setDrawArea(drawArea);
-            drawArea.setWidth(5000);
-            drawArea.setHeight(5000);
+            drawArea.setWidth(1500);
+            drawArea.setHeight(1500);
             drawArea.isDrawableObjectResize = true;
             drawArea.isDrawableObjectMove = true;
             drawArea.isDrawableObjectMouseOver = true;
-            drawArea.arrangeDirection = ArrangeDirection.None;
+            drawArea.setArrangeDirection(ArrangeDirection.None);
             drawArea.arrangeFixCount = 2;
-            drawArea.drawableObjectClick.addEvent(this.handler.bind(this));
+            
+            drawArea2.isDrawableObjectResize = true;
+            drawArea2.isDrawableObjectMove = true;
+            drawArea2.isDrawableObjectMouseOver = true;
+            drawArea2.setArrangeDirection(ArrangeDirection.None);
+            drawArea2.drawableObjectClick.addEvent(this.handler.bind(this));
             
             const qcItem = new QCSideItem("QC01");
             qcItem.backColor = Color.Green();
@@ -120,7 +141,7 @@ class QuayCrane extends DrawUserComponent {
             const crane = new TCrane(qcItem);
             crane.attribute.outLineColor = Color.Red();
             crane.setCraneVerticalMargin(this.craneVerticalMargin * this.zoomRatio - this.arrangeTopMargin);
-            crane.setLocation(new Point(100, 4500));
+            crane.setLocation(new Point(100, 1000));
             crane.rotate(15);
             crane.updateMBR();
             crane.enableResizable = true;
@@ -133,7 +154,19 @@ class QuayCrane extends DrawUserComponent {
             crane2.setCraneVerticalMargin(this.craneVerticalMargin * this.zoomRatio - this.arrangeTopMargin);
             crane2.setLocation(new Point(100, 100));
             crane2.updateMBR();
+            crane2.enableResizable = true;
+            crane2.enableMouseOver = true;
             drawArea.addDrawableObject(crane2);
+
+            qcItem.name = "QC02";
+            const crane3 = new TCrane(qcItem);
+            crane3.attribute.outLineColor = Color.Red();
+            crane3.setCraneVerticalMargin(this.craneVerticalMargin * this.zoomRatio - this.arrangeTopMargin);
+            crane3.setLocation(new Point(100, 100));
+            crane3.updateMBR();
+            crane3.enableResizable = true;
+            crane3.enableMouseOver = true;
+            drawArea2.addDrawableObject(crane3);
 
             const text = new DrawText("text");
             text.attribute.fontSize = 40;
@@ -147,32 +180,57 @@ class QuayCrane extends DrawUserComponent {
             container.addGeomObject(text);
             container.updateMBR();
             //canvas.addDrawableObject(container);
-
-            const geomPolygon = new GeometryPolygon("polygon", [new Point(0, 50), new Point(50, 0), new Point(100, 50), new Point(80, 100), new Point(20, 100)])
-            geomPolygon.attribute.fontSize = 40;
-            geomPolygon.attribute.textOutLineColor = Color.Red();
-            geomPolygon.attribute.textOutLineThick = 1;
-            geomPolygon.attribute.isOutLine = true;
-            geomPolygon.attribute.outLineColor = Color.Black();
-            geomPolygon.enableResizable = true;
-            geomPolygon.rotate(15);
-            //canvas.addDrawableObject(geomPolygon);
         }
+    }
+
+    onInputXChange(e: any): void {
+        if (e.target.value) this.setState({ x: e.target.value });
+    }
+
+    onInputYChange(e: any): void {
+        if (e.target.value) this.setState({ y: e.target.value });
+    }
+
+    onInputRotateChange(e: any): void {
+        if (e.target.value) this.setState({ rotate: e.target.value });
+    }
+
+    onAddRectangleClick(e: any): void {
+        const geomRectangle = new GeometryRectangle("rectangle" + Guid.create(), 0, 0, 100, 100);
+        geomRectangle.setLocation(new Point(parseInt(this.state.x.toString()), parseInt(this.state.y.toString())));
+        geomRectangle.enableResizable = true;
+        geomRectangle.rotate(parseInt(this.state.rotate.toString()));
+        super.getDrawArea().addDrawableObject(geomRectangle);
+    }
+
+    onAddPolygonClick(e: any): void {
+        const geomPolygon = new GeometryPolygon("polygon" + Guid.create(), [new Point(0, 50), new Point(50, 0), new Point(100, 50), new Point(80, 100), new Point(20, 100)])
+        geomPolygon.enableResizable = true;
+        geomPolygon.rotate(parseInt(this.state.rotate.toString()));
+        geomPolygon.movePoint(new Point(parseInt(this.state.x.toString()), parseInt(this.state.y.toString())));
+        super.getDrawArea().addDrawableObject(geomPolygon);
     }
 
     render() {
         return (
             <div>
+                X: <input type="inputX" onChange={this.onInputXChange.bind(this)} style={{width: '50px'}}/>&nbsp;
+                Y: <input type="inputY" onChange={this.onInputYChange.bind(this)} style={{width: '50px'}}/>&nbsp;
+                Rotate: <input type="inputRotate" onChange={this.onInputRotateChange.bind(this)} style={{width: '50px'}}/><br/>
+                <button id="addRec" onClick={this.onAddRectangleClick.bind(this)}>Add Rectangle</button>&nbsp;
+                <button id="addPolygon" onClick={this.onAddPolygonClick.bind(this)}>Add Polygon</button><br/>
                 <DrawArea ref={this._drawAreaRef} />
+                <DrawArea ref={this._drawAreaRef2} />
             </div>
         );
     }
 }
 
 const QCSide = ({match}: any) => {
+    //console.log(match);
     return (
         <div>
-            <QuayCrane/>
+            <QuayCrane name = 'hi, it`s qcside page'/>
         </div>
     )
 }

@@ -73,9 +73,9 @@ abstract class BaseDrawableList {
         const dragableList = this.getGeometryList("isDragable", true, true);
         let flag = false;
 
-        if (baseDrawArea.allowDragAtDrawControl && !baseDrawArea.isChildDrawableObjectSelect) {
+        if (baseDrawArea.getAllowDragAtDrawControl() && !baseDrawArea.isChildDrawableObjectSelect) {
             flag = true;
-        } else if (!baseDrawArea.allowDragAtDrawControl && baseDrawArea.isChildDrawableObjectSelect) {
+        } else if (!baseDrawArea.getAllowDragAtDrawControl() && baseDrawArea.isChildDrawableObjectSelect) {
             flag = false;
         }
 

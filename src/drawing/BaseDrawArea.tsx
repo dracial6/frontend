@@ -1,4 +1,3 @@
-import { getByText } from '@testing-library/react';
 import React, { RefObject } from 'react';
 import FontUtil from '../utils/FontUtil';
 import BaseDrawableList from './BaseDrawableList';
@@ -32,9 +31,10 @@ abstract class BaseDrawArea extends React.Component {
     private _mouseDownPos = Point.Empty();
     private _drawableEventManager: DrawableEventManager;
     private _state = new DrawAreaStatus();
+    private _arrangeDirection = ArrangeDirection.None;
+    private _allowDragAtDrawControl = false;
     protected _autoSelectionToFront = true;
 
-    allowDragAtDrawControl = false;
     isDrawableObjectSelect = false;
     isDrawableObjectDragSelect = false;
     isChildDrawableObjectSelect = false;
@@ -42,7 +42,6 @@ abstract class BaseDrawArea extends React.Component {
     isDrawableObjectMove = false;
     isDrawableMemoryCache = false;
     isDrawableObjectMouseOver = false;
-    arrangeDirection = ArrangeDirection.None;
     arrangeLeftMargin = 1;
     rightExtendsionMargin = 0;
     arrangeTopMargin = 1;
@@ -79,6 +78,29 @@ abstract class BaseDrawArea extends React.Component {
 
     static getContext(): CanvasRenderingContext2D | undefined{
         return BaseDrawArea._staticCanvasContext;
+    }
+
+    getArrangeDirection(): ArrangeDirection {
+        return this._arrangeDirection;
+    }
+
+    setArrangeDirection(arrangeDirection: ArrangeDirection): void {
+        this._arrangeDirection = arrangeDirection;
+        if (this._arrangeDirection !== ArrangeDirection.None) {
+            this.isDrawableObjectMove = false;
+            this.isDrawableObjectResize = false;
+        }
+    }
+
+    getAllowDragAtDrawControl(): boolean {
+        return this._allowDragAtDrawControl;
+    }
+
+    setAllowDragAtDrawControl(allowDragAtDrawControl: boolean): void {
+        this._allowDragAtDrawControl = allowDragAtDrawControl;
+        if (allowDragAtDrawControl) {
+            this.isDrawableObjectMove = false;
+        }
     }
 
     getDrawArrangeHandler(): DrawArrangeHandler {
@@ -226,11 +248,11 @@ abstract class BaseDrawArea extends React.Component {
     protected doArrangeDrawObject(list: IDrawableGeometry[], enforceArrange: boolean): void {
         if (list.length === 0) return;
 
-        if (this.arrangeDirection !== ArrangeDirection.None) {
+        if (this._arrangeDirection !== ArrangeDirection.None) {
             const topLevelGeometry = list[0];
             const topLevelGeometryPoint = topLevelGeometry.getLocation();
             
-            this._drawArrangeHandler.arrange(this.getDefaultDrawList().getDrawList(), this.arrangeDirection, this.arrangeFixCount, enforceArrange);
+            this._drawArrangeHandler.arrange(this.getDefaultDrawList().getDrawList(), this._arrangeDirection, this.arrangeFixCount, enforceArrange);
 
             if (topLevelGeometry && (topLevelGeometry.baseLocation.equal(Point.Empty()) === false || topLevelGeometry.drawingDirection !== DrawingDirection.LeftToRightAndTopToBottom)) {
                 if (topLevelGeometryPoint !== topLevelGeometry.getLocation()) {

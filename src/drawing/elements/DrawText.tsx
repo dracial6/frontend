@@ -166,7 +166,7 @@ class DrawText extends BaseDraw {
 
     getTextSize(): Size {
         this.makeTextSize(true);
-        return this._size;
+        return new Size(this._size.width, this._size.height);
     }
 
     getRealTextSize(): Size {

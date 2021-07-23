@@ -333,7 +333,7 @@ class TCrane extends DrawableObject {
     onMouseHover(sender: any, event: MouseEvent): void {        
     }
     onMouseLeave(sender: any, event: MouseEvent): void {
-        console.log("i");
+        console.log("leave " + this.name);
     }
     onMouseClick(sender: any, event: MouseEvent): void {
     }

@@ -110,13 +110,13 @@ class MouseDownHandler extends BaseEventHandler {
             }
 
             if (obj) {
-                if (drawArea.allowDragAtDrawControl || drawArea.isChildDrawableObjectSelect) {
+                if (drawArea.getAllowDragAtDrawControl() || drawArea.isChildDrawableObjectSelect) {
                     if (obj instanceof BaseDrawableObject) {
                         const dummyList = obj.getGeomListByType('isChanged') as IDrawableGeometry[];
                         const dragObjs = SearchUtil.getGeometryListByType(dummyList, 'isDragable', true, true, undefined);
 
                         if (dragObjs && dragObjs.length > 0) {
-                            if (drawArea.allowDragAtDrawControl && (dragObjs[0] as any as IDragable).isDragable === false) {
+                            if (drawArea.getAllowDragAtDrawControl() && (dragObjs[0] as any as IDragable).isDragable === false) {
                                 obj = dragObjs[0] as IDrawableGeometry;
                             } else if (drawArea.isChildDrawableObjectSelect) {
                                 obj = dragObjs[0] as IDrawableGeometry;
@@ -130,7 +130,7 @@ class MouseDownHandler extends BaseEventHandler {
                 if ('isChanged' in obj) {
                     prevIsSelected = obj.isSelected;
 
-                    if ((obj  as any as IDragable).isDragable && drawArea.allowDragAtDrawControl) {
+                    if ((obj  as any as IDragable).isDragable && drawArea.getAllowDragAtDrawControl()) {
                         super.setOperationMode(OperationMode.DragDrop);
                     } else if ((obj  as any as IDragable).isDragable === false && drawArea.isChildDrawableObjectSelect) {
                         super.setOperationMode(OperationMode.MouseDown);
@@ -156,7 +156,7 @@ class MouseDownHandler extends BaseEventHandler {
                     obj.isSelected = true;
                     super.setAlreadySelectedList(alreadySelectedList);
 
-                    if (!drawArea.isDrawableObjectMove && !drawArea.allowDragAtDrawControl) {
+                    if (!drawArea.isDrawableObjectMove && !drawArea.getAllowDragAtDrawControl()) {
                         super.setOperationMode(OperationMode.Hover);
                     }
 

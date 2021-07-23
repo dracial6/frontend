@@ -252,7 +252,7 @@ class MouseMoveHandler extends BaseEventHandler {
     }
 
     private doDrag(drawArea: BaseDrawArea): boolean {
-        if (drawArea.allowDragAtDrawControl) {
+        if (drawArea.getAllowDragAtDrawControl()) {
             if (this.getOperationMode() === OperationMode.DragDrop) {
                 this.setCurrentOperationMode(OperationMode.DragDrop);
 

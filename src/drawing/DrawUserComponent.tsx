@@ -10,6 +10,10 @@ class DrawUserComponent extends React.Component {
         super(props);
     }
 
+    getDrawArea(): BaseDrawArea {
+        return this.MyDrawArea;
+    }
+
     setDrawArea(drawArea: BaseDrawArea): void {
         this.MyDrawArea = drawArea;
     }
@@ -19,7 +23,7 @@ class DrawUserComponent extends React.Component {
     }
 
     setArrangeDirection(arrangeDirection: ArrangeDirection): void {
-        if (this.MyDrawArea) this.MyDrawArea.arrangeDirection = arrangeDirection;
+        if (this.MyDrawArea) this.MyDrawArea.setArrangeDirection(arrangeDirection);
     }
 
     setArrangeTopMargin(arrangeTopMargin: number): void {
@@ -55,7 +59,7 @@ class DrawUserComponent extends React.Component {
     }
 
     setAllowDragAtDrawControl(allowDragAtDrawControl: boolean): void {
-        if (this.MyDrawArea) this.MyDrawArea.allowDragAtDrawControl = allowDragAtDrawControl;
+        if (this.MyDrawArea) this.MyDrawArea.setAllowDragAtDrawControl(allowDragAtDrawControl);
     }
 
     setIsChildDrawableObjectSelect(isChildDrawableObjectSelect: boolean): void {
