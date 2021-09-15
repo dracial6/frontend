@@ -1,12 +1,12 @@
 import React, {useEffect, useRef} from 'react';
 import axios from 'axios';
-import VesselDefine from '../../drawing/shipplan/items/VesselDefine';
-import ShipUtil from '../../drawing/shipplan/utils/ShipUtil';
-import TBay from '../../drawing/shipplan/TBay';
-import TBayProperty from '../../drawing/shipplan/TBayProperty';
-import { HatchDefine } from '../../drawing/shipplan/structures';
+import VesselDefine from './items/VesselDefine';
 import { Color } from '../../drawing/structures';
 import DrawArea from '../../drawing/DrawArea';
+import { HatchDefine } from './structures';
+import TBayProperty from './TBayProperty';
+import ShipUtil from './utils/ShipUtil';
+import TBay from './TBay';
 
 const vslDefine = new VesselDefine();
 let define: HatchDefine;

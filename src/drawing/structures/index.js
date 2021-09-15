@@ -19,3 +19,6 @@ export { default as ContentAlignment } from './ContentAlignment';
 export { default as DrawAreaViewState } from './DrawAreaViewState';
 export { default as OperationMode } from './OperationMode';
 export { default as DrawControlEventType } from './DrawControlEventType';
+export { default as DrawTextDirection } from './DrawTextDirection';
+export { default as LineAlignment } from './LineAlignment';
+export { default as ZoomType } from './ZoomType';

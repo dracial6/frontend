@@ -1,0 +1,87 @@
+import BaseTextItem from "../../../drawing/items/BaseTextItem";
+import { Color } from "../../../drawing/structures";
+import ContentAlignment from "../../../drawing/structures/ContentAlignment";
+import { ContainerHeightType } from "../../shipplan/structures";
+import ContainerBaseItem from "./ContainerBaseItem";
+import SideRectangleStyleItem from "./SideRectangleStyleItem";
+import SideTextStyleItem from "./SideTextStyleItem";
+import SideTriangleStyleItem from "./SideTriangleStyleItem";
+import SymbolStyleItem from "./SymbolStyleItem";
+
+class ContainerGeneralItem extends ContainerBaseItem {
+    boundMode = 0;
+    port = 0;
+    foreColor = Color.Transparent();
+    backColorLeft = Color.Transparent();
+    foreColorLeft = Color.Transparent();
+    backColorRight = Color.Transparent();
+    foreColorRight = Color.Transparent();
+    backColorTop = Color.Transparent();
+    foreColorTop = Color.Transparent();
+    backColorBottom = Color.Transparent();
+    foreColorBottom = Color.Transparent();
+    cntrLengthColor = Color.Transparent();
+    sztpHighCubic = '';
+    cntrDigit = '';
+    portCode = '';
+    cargoCode = '';
+    wgt = '';
+    pf = '';
+    cate = '';
+    selSeq = '';
+    sz = 0;
+    osh = 0;
+    oss = 0;
+    osp = 0;
+    ovh = 0;
+    ovs = 0;
+    ovp = 0;
+    rstTime = 0;
+    wType = 0;
+    seq = '';
+    unNo = '';
+    eqSeq = '';
+    cntrLength = '';
+    rst = 0;
+    tandemFlag = 0;
+    eq = '';
+    iSBN = false;
+    isFixed = false;
+    isTwin = false;
+    isFloor = false;
+    isIBDone = false;
+    isOBDone = false;
+    ibDoneLineThick = 0.5;
+    obDoneLineThick = 0.5;
+    isItalic = false;
+    stackMark = false;
+    isDual = false;
+    cellBookmarkBackColor = Color.LightGray();
+    cellBookmarkLineColor = Color.LightGray();
+    heightType = ContainerHeightType.FT86;
+    imdgSymbol?: SymbolStyleItem;
+    outerLeftSideTriangle = new SideTriangleStyleItem();
+    outerTopSideTriangle = new SideTriangleStyleItem();
+    outerRightSideTriangle = new SideTriangleStyleItem();
+    innerTopSideTriangle = new SideTriangleStyleItem();
+    innerLeftSideText = new SideTextStyleItem();
+    innerTopSideText = new SideTextStyleItem();
+    innerRightSideText = new SideTextStyleItem();
+    outerSizeRectangle?: SideRectangleStyleItem;
+    crosslineLeftToRight? : SymbolStyleItem;
+    cellTextTop? = new BaseTextItem();
+    cellTextCenterLeft? = new BaseTextItem();
+    cellTextCenterRight? = new BaseTextItem();
+    cellTextBottomLeft? = new BaseTextItem();
+    cellTextBottomRight? = new BaseTextItem();
+    cellTextTopFirstLine? = new BaseTextItem();
+    cellTextTopSecondLine? = new BaseTextItem();
+    containerIcon?: ImageData;
+    containerIconAlign = ContentAlignment.TopLeft;
+    
+    useCellTextFormat(): boolean {
+        return !(!this.cellTextTop && !this.cellTextCenterLeft && !this.cellTextCenterRight && !this.cellTextBottomLeft && !this.cellTextBottomRight);
+    }
+}
+
+export default ContainerGeneralItem;

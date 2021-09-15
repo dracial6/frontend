@@ -1,21 +1,49 @@
 import React, { RefObject } from 'react';
+import { TEvent } from '../common';
+import MouseButtons from '../common/structures/MouseButtons';
+import GeneralLogger from '../logger/GeneralLogger';
 import FontUtil from '../utils/FontUtil';
+import SearchUtil from '../utils/SearchUtil';
 import BaseDrawableList from './BaseDrawableList';
 import DrawAreaStatus from './DrawAreaStatus';
 import DrawArrangeHandler from './DrawArrangeHandler';
 import BaseDrawableObject from './elements/BaseDrawableObject';
 import GeometryRectangle from './elements/GeometryRectangle';
+import GeometryText from './elements/GeometryText';
 import IBaseGeometry from './elements/IBaseGeometry';
 import IDrawableGeometry from './elements/IDrawableGeometry';
+import IGeometryToolTip from './elements/IGeometryToolTip';
 import DrawCanvasEvent from './events/DrawCanvasEvent';
 import DrawCanvasEventArgs from './events/DrawCanvasEventArgs';
 import DrawDragEvent from './events/DrawDragEvent';
 import DrawDragEventArgs from './events/DrawDragEventArgs';
 import DrawableEventManager from './events/handler/DrawableEventManager';
-import { Cursors, DashStyles, DrawAreaViewState, DrawControlEventType, DrawingDirection, FontStyles, Point, Rectangle, Size } from './structures';
+import { Color, Cursors, DashStyles, DrawAreaViewState, DrawControlEventType, DrawingDirection, FontStyles, Point, Rectangle, Size, ZoomType } from './structures';
 import ArrangeDirection from './structures/ArrangeDirection';
 
+type PreprocessPaintMethodDelegate = () => void;
+
+class PreprocessPaintMethodHandler extends TEvent {
+    protected events: PreprocessPaintMethodDelegate[] = [];
+
+    addEvent(eventHandler: PreprocessPaintMethodDelegate): void {
+        this.events.push(eventHandler);
+    }
+
+    removeEvent(eventHandler: PreprocessPaintMethodDelegate): void {
+        if (this.isEmpty()) return;
+        this.events.splice(this.events.indexOf(eventHandler), 1);
+    }
+
+    doEvent(): void {
+        this.events.forEach(eventHandler => {
+            eventHandler();
+        });
+    }
+}
+
 abstract class BaseDrawArea extends React.Component {
+    protected _autoSelectionToFront = true;
     private _canvasContext!: CanvasRenderingContext2D;
     private static _staticCanvasContext: CanvasRenderingContext2D | undefined;
     private _canvasRef: RefObject<HTMLCanvasElement>;
@@ -28,12 +56,13 @@ abstract class BaseDrawArea extends React.Component {
     private _enableViewStatusChange = false;
     private _currentMouseButton = -1;
     private _dragRec?: GeometryRectangle;
-    private _mouseDownPos = Point.Empty();
+    private _mouseDownPos = Point.empty();
     private _drawableEventManager: DrawableEventManager;
     private _state = new DrawAreaStatus();
     private _arrangeDirection = ArrangeDirection.None;
     private _allowDragAtDrawControl = false;
-    protected _autoSelectionToFront = true;
+    private _tooltipGeomText: GeometryText;
+    private _parentTagElement! : HTMLElement;
 
     isDrawableObjectSelect = false;
     isDrawableObjectDragSelect = false;
@@ -49,7 +78,13 @@ abstract class BaseDrawArea extends React.Component {
     isChanged = false;
     enableMouseRightButton = false;
     visibleMouseDragLine = true;
+    mouseX = 0;
+    mouseY = 0;
+    zoomLargeChange = 0.5;
 
+    preprocessPaintMethodHandler = new PreprocessPaintMethodHandler();
+
+    private readonly tooltipName = 'ToolTip';
     readonly drawableObjectClick = new DrawCanvasEvent();
     readonly drawableObjectDoubleClick = new DrawCanvasEvent();
     readonly drawableObjectDragSelect = new DrawCanvasEvent();
@@ -66,6 +101,13 @@ abstract class BaseDrawArea extends React.Component {
     constructor(props: any) {
         super(props);
         this.setPageScale(1);
+        this._tooltipGeomText = new GeometryText(this.tooltipName, 0, 0, '');
+        this._tooltipGeomText.enableMouseOver = false;
+        this._tooltipGeomText.attribute.isOutLine = true;
+        this._tooltipGeomText.attribute.outLineColor = Color.Black();
+        this._tooltipGeomText.attribute.fillColor = Color.White();
+        this._tooltipGeomText.attribute.fontSize = 20;
+        this._tooltipGeomText.visible = false;
         this._drawableEventManager = new DrawableEventManager(this._state);
         this._drawArrangeHandler = new DrawArrangeHandler(this, this.arrangeTopMargin, this.arrangeLeftMargin);        
 
@@ -76,8 +118,12 @@ abstract class BaseDrawArea extends React.Component {
         window.onkeyup = this.onKeyUp;
     }
 
-    static getContext(): CanvasRenderingContext2D | undefined{
+    static getContext(): CanvasRenderingContext2D | undefined {
         return BaseDrawArea._staticCanvasContext;
+    }
+
+    getState(): DrawAreaStatus {
+        return this._state;
     }
 
     getArrangeDirection(): ArrangeDirection {
@@ -152,8 +198,8 @@ abstract class BaseDrawArea extends React.Component {
         if (!this._canvasContext) return;
 
         this._canvasContext.canvas.width = width;
+        
     }
-
     getHeight(): number {
         if (!this._canvasContext) return 0;
 
@@ -164,6 +210,22 @@ abstract class BaseDrawArea extends React.Component {
         if (!height) return;
 
         this._canvasContext.canvas.height = height;
+    }
+
+    getScrollX(): number {
+        return this._parentTagElement.scrollLeft;
+    }
+
+    setScrollX(x: number): void {
+        this._parentTagElement.scrollLeft = x;
+    }
+
+    getScrollY(): number {
+        return this._parentTagElement.scrollTop;
+    }
+
+    setScrollY(x: number): void {
+        this._parentTagElement.scrollTop = x;
     }
 
     getOffsetX(): number {
@@ -192,8 +254,11 @@ abstract class BaseDrawArea extends React.Component {
     }
 
     componentDidMount() {
+        this.addDrawableObject(this._tooltipGeomText);
+
         const canvas = this._canvasRef.current;
         if (canvas) {
+            this._parentTagElement = document.getElementById('parent') as HTMLElement;
             canvas.addEventListener('click', this.onMouseClick.bind(this), false);
             canvas.addEventListener('dblclick', this.onMouseDoubleClick.bind(this), false);
             canvas.onmousemove = this.onMouseMove.bind(this);
@@ -223,6 +288,10 @@ abstract class BaseDrawArea extends React.Component {
 
     paint(): void {
         if (this.isChanged && this._canvasContext) {
+            if (this.preprocessPaintMethodHandler.isEmpty() === false) {
+                this.preprocessPaintMethodHandler.doEvent();
+            }
+
             this._canvasContext.clearRect(0, 0, this._canvasContext.canvas.width, this._canvasContext.canvas.height);
 
             this.arrangeDrawObject(false);
@@ -254,7 +323,7 @@ abstract class BaseDrawArea extends React.Component {
             
             this._drawArrangeHandler.arrange(this.getDefaultDrawList().getDrawList(), this._arrangeDirection, this.arrangeFixCount, enforceArrange);
 
-            if (topLevelGeometry && (topLevelGeometry.baseLocation.equal(Point.Empty()) === false || topLevelGeometry.drawingDirection !== DrawingDirection.LeftToRightAndTopToBottom)) {
+            if (topLevelGeometry && (Point.isEmpty(topLevelGeometry.baseLocation) === false || topLevelGeometry.drawingDirection !== DrawingDirection.LeftToRightAndTopToBottom)) {
                 if (topLevelGeometryPoint !== topLevelGeometry.getLocation()) {
                     topLevelGeometry.baseLocation = topLevelGeometry.getLocation();
                     this.setBaseLocation(topLevelGeometry, new Point(topLevelGeometryPoint.x, topLevelGeometryPoint.y), topLevelGeometry.drawingDirection);
@@ -317,7 +386,7 @@ abstract class BaseDrawArea extends React.Component {
     refresh(): void {
         if (this._canvasContext) this._canvasContext.clearRect(0, 0, this._canvasContext.canvas.width, this._canvasContext.canvas.height);
 
-        const drawList = this.getDefaultDrawList().getGeometryList("isSelected", true, true);
+        const drawList = this.getDefaultDrawList().getGeometryList("IDrawableGeometry", true, true);
         
         drawList.forEach(element => {
             element.isChanged = true;
@@ -377,14 +446,20 @@ abstract class BaseDrawArea extends React.Component {
     }
 
     measureText(text: string, familyName: string, emSize: number, style: FontStyles): Size {
-        return FontUtil.measureText(text, familyName, emSize, style);
+        const textMetrics = FontUtil.measureText(text, familyName, emSize, style);
+
+        if (textMetrics) {
+            return new Size(textMetrics.width, textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent);
+        } else {
+            return Size.empty();
+        }
     }
 
     findAllByKey(key: string): IBaseGeometry[] {
         return this.getDefaultDrawList().findAllByKey(key);
     }
 
-    findAllAtPoint(pPosX: number, pPosY: number): IBaseGeometry[] {
+    findAllAtPoint(pPosX: number, pPosY: number): IDrawableGeometry[] {
         return this.getDefaultDrawList().findAllAtPoint(new Point(pPosX, pPosY));
     }
 
@@ -392,11 +467,11 @@ abstract class BaseDrawArea extends React.Component {
         return this.getDefaultDrawList().findFirstByKey(key);
     }
 
-    findAtBoundary(boundary: Rectangle, pageScale: number): IBaseGeometry[] {
+    findAtBoundary(boundary: Rectangle, pageScale: number): IDrawableGeometry[] {
         return this.getDefaultDrawList().findAtBoundary(boundary, pageScale);
     }
 
-    findAtPoint(pPosX: number, pPosY: number): IBaseGeometry[] {
+    findAtPoint(pPosX: number, pPosY: number): IDrawableGeometry[] {
         return this.getDefaultDrawList().findAtPoint(new Point(pPosX, pPosY));
     }
 
@@ -505,48 +580,100 @@ abstract class BaseDrawArea extends React.Component {
         return this._viewStatus;
     }
 
+    getScale(zoomType: ZoomType): number {
+        let temp_m_Scalef = this.zoomLargeChange;
+        let scalef = 1;
+
+        try {
+            if (zoomType == ZoomType.PAGE_SCALE_IN || zoomType == ZoomType.PAGE_SCALE_OUT) {
+                if (zoomType == ZoomType.PAGE_SCALE_IN) {
+                    if (this._pageScale < 0.5) {
+                        temp_m_Scalef = 0.1;
+                    }
+
+                    scalef = this._pageScale + temp_m_Scalef;
+                } else if (zoomType == ZoomType.PAGE_SCALE_OUT) {
+                    if (this._pageScale <= 0.5) {
+                        temp_m_Scalef = 0.1;
+                    }
+
+                    scalef = this._pageScale - temp_m_Scalef;
+                }
+            }
+        } catch (ex) {
+            GeneralLogger.error(ex);
+        }
+
+        return scalef;
+    }
+
+    zoomInOut(scalef: number): void {
+        if (!this._canvasContext) return;
+        this._canvasContext.scale(scalef, scalef);
+    }
+
     private getRealMouseEvent(e: MouseEvent): MouseEvent {
+        const scrollGapX = (this._pageScale > 1) ? (e.pageX - e.clientX) / this._pageScale : 0;
+        const scrollGapY = (this._pageScale > 1) ? (e.pageY - e.clientY) / this._pageScale : 0;
         const mouseEvent = new MouseEvent(e.type);
-        if (e.view) mouseEvent.initMouseEvent(e.type, e.cancelBubble, e.cancelBubble, e.view, e.detail, e.screenX, e.screenY, e.clientX - this.getOffsetX(), e.clientY - this.getOffsetY(), e.ctrlKey, e.altKey, e.shiftKey, e.metaKey, e.button, e.relatedTarget);
+        if (e.view) mouseEvent.initMouseEvent(e.type, e.cancelBubble, e.cancelBubble, e.view, e.detail, e.screenX, e.screenY, (e.clientX - this.getOffsetX()) / this._pageScale - scrollGapX + this.getScrollX(), (e.clientY - this.getOffsetY()) / this._pageScale - scrollGapY + this.getScrollY(), e.ctrlKey, e.altKey, e.shiftKey, e.metaKey, e.button, e.relatedTarget);
 
         return mouseEvent;
     }
 
+    moveScreenCenter(point: Point): void {
+        const posX = point.x * this._pageScale - this.getWidth() / 2;
+        const posY = point.y * this._pageScale - this.getHeight() / 2;
+
+        this._parentTagElement.scrollLeft = posX;
+        this._parentTagElement.scrollTop = posY;
+    }
+
+    getCurrentShownBounds(): Rectangle {
+        return new Rectangle(this.getScrollX(), this.getScrollY(), this._parentTagElement.getBoundingClientRect().width, this._parentTagElement.getBoundingClientRect().height);
+    }
+
+    getDrawablesCurrentBounds<T extends IDrawableGeometry>(shownBounds: Rectangle, memberName: string): T[] {
+        const shownDrawablesByType = this.getDefaultDrawList().findAtBoundary(shownBounds, this._pageScale);
+        return SearchUtil.getGeometryListByMember(shownDrawablesByType, memberName) as T[];
+    }
+
+    getCurrentMousePoint(): Point {
+        return new Point(this.mouseX, this.mouseY);
+    }
+
     isMouseClick(): boolean {
-        if (this._currentMouseButton === 0) return true;
-        if (this._currentMouseButton === 2 && this.enableMouseRightButton) return true;
+        if (this._currentMouseButton === MouseButtons.Left) return true;
+        if (this._currentMouseButton === MouseButtons.Right && this.enableMouseRightButton) return true;
 
         return false;
     }
 
-    render() {
-        return (
-            <div>
-                <canvas ref={this._canvasRef} />
-            </div>
-        );
-    }
-
-    onKeyDown(e: KeyboardEvent): void {
+    private onKeyDown(e: KeyboardEvent): void {
         BaseDrawArea.IsCtrlKeyPressed = e.ctrlKey;
     }
 
-    onKeyUp(e: KeyboardEvent): void {
+    private onKeyUp(e: KeyboardEvent): void {
         BaseDrawArea.IsCtrlKeyPressed = e.ctrlKey;
     }
 
-    onMouseMove(e: MouseEvent): void {
+    private onMouseMove(e: MouseEvent): void {
         if (!this._canvasContext) return;
         
         const mouseEvent = this.getRealMouseEvent(e);
+
+        this.mouseX = mouseEvent.pageX;
+        this.mouseY = mouseEvent.pageY;
 
         if (this.getViewStatus() === DrawAreaViewState.NAVIGATE) {
             return;
         }
 
-        if (this.isMouseClick() || mouseEvent.button === 0) {
+        if (this.isMouseClick() || mouseEvent.button === MouseButtons.Left) {
             this._drawableEventManager.onMouseMove(this, mouseEvent);
         }
+
+        this.setToolTip();
     }
 
     onMouseClick(e: MouseEvent) : void {
@@ -581,6 +708,8 @@ abstract class BaseDrawArea extends React.Component {
         if (this.isMouseClick()) {
             this._drawableEventManager.onMouseDown(this, mouseEvent);
         }
+
+        this.moveToTop(this._tooltipGeomText.name);
     }
 
     onMouseUp(e: MouseEvent): void {
@@ -592,7 +721,7 @@ abstract class BaseDrawArea extends React.Component {
         this.refresh();
 
         if (this.getViewStatus() === DrawAreaViewState.CONTROL) {
-            if (this._currentMouseButton === 0 && (this.getCursor() === Cursors.not_allowed.toString())) {
+            if (this._currentMouseButton === MouseButtons.Left && (this.getCursor() === Cursors.not_allowed.toString())) {
                 this.setCursor(Cursors.default);
             }
 
@@ -629,7 +758,33 @@ abstract class BaseDrawArea extends React.Component {
         this._dragRec.setSize(new Size(x - this._mouseDownPos.x, y - this._mouseDownPos.y));
     }
 
+    private setToolTip(): void {
+        let obj = this.getState().currentOverObject as any as IGeometryToolTip;
+
+        if (!obj) {
+            obj = this.getState().currentResizeObject as any as IGeometryToolTip;
+        }
+
+        if (obj) {
+            this._tooltipGeomText.text = obj.tooltipText;
+            this._tooltipGeomText.setLocation(new Point(this.mouseX + 12, this.mouseY + 20));
+            this._tooltipGeomText.visible = true;
+            this.moveToTop(this._tooltipGeomText.name);
+        } else {
+            this._tooltipGeomText.visible = false;
+            this._tooltipGeomText.isChanged = true;
+        }
+    }
+
     abstract getDefaultDrawList(): BaseDrawableList;
+
+    render() {
+        return (
+            <div>
+                <canvas ref={this._canvasRef} />
+            </div>
+        );
+    }
 }
 
 export default BaseDrawArea;

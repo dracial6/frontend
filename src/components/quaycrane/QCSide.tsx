@@ -2,23 +2,28 @@ import React, {useState , RefObject} from 'react';
 import BaseDrawArea from '../../drawing/BaseDrawArea';
 import DrawArea from '../../drawing/DrawArea';
 import DrawUserComponent from '../../drawing/DrawUserComponent';
-import QCSideCabinItem from '../../drawing/drawcontainer/quaycrane/items/QCSideCabinItem';
-import QCSideContainerItem from '../../drawing/drawcontainer/quaycrane/items/QCSideContainerItem';
-import QCSideItem from '../../drawing/drawcontainer/quaycrane/items/QCSideItem';
-import QCSideMachineryHouseItem from '../../drawing/drawcontainer/quaycrane/items/QCSideMachineryHouseItem';
-import QCSideSpreaderItem from '../../drawing/drawcontainer/quaycrane/items/QCSideSpreaderItem';
-import QCSideTrolleyItem from '../../drawing/drawcontainer/quaycrane/items/QCSideTrolleyItem';
-import TrolleyJobTypes from '../../drawing/drawcontainer/quaycrane/structures/TrolleyJobTypes';
-import TCrane from '../../drawing/drawcontainer/quaycrane/TCrane';
+import QCSideCabinItem from './drawcontainer/quaycrane/items/QCSideCabinItem';
+import QCSideContainerItem from './drawcontainer/quaycrane/items/QCSideContainerItem';
+import QCSideItem from './drawcontainer/quaycrane/items/QCSideItem';
+import QCSideMachineryHouseItem from './drawcontainer/quaycrane/items/QCSideMachineryHouseItem';
+import QCSideSpreaderItem from './drawcontainer/quaycrane/items/QCSideSpreaderItem';
+import QCSideTrolleyItem from './drawcontainer/quaycrane/items/QCSideTrolleyItem';
+import TrolleyJobTypes from './drawcontainer/quaycrane/structures/TrolleyJobTypes';
+import TCrane from './drawcontainer/quaycrane/TCrane';
 import DrawText from '../../drawing/elements/DrawText';
 import GeometryPolygon from '../../drawing/elements/GeometryPolygon';
 import DrawCanvasEventArgs from '../../drawing/events/DrawCanvasEventArgs';
 import TextBoxItem from '../../drawing/items/TextBoxItem';
-import { Color, DrawingDirection, Point } from '../../drawing/structures';
+import { Color, LineAlignment, Point, Size } from '../../drawing/structures';
 import ArrangeDirection from '../../drawing/structures/ArrangeDirection';
-import EmptyContainer from './EmptyContainer';
 import GeometryRectangle from '../../drawing/elements/GeometryRectangle';
 import { Guid } from 'guid-typescript';
+import GeometryTriangle from '../../drawing/elements/GeometryTriangle';
+import GeometryEllipse from '../../drawing/elements/GeometryEllipse';
+import DrawTriangle from '../../drawing/elements/DrawTriangle';
+import DrawRectangle from '../../drawing/elements/DrawRectangle';
+import DrawPolygon from '../../drawing/elements/DrawPolygon';
+import GeneralLogger from '../../logger/GeneralLogger';
 
 class QuayCrane extends DrawUserComponent {    
     state = {
@@ -28,7 +33,7 @@ class QuayCrane extends DrawUserComponent {
     }
 
     private _drawAreaRef: RefObject<DrawArea>;
-    private _drawAreaRef2: RefObject<DrawArea>;
+    //private _drawAreaRef2: RefObject<DrawArea>;
     
     static defaultProps = {
         name: ''
@@ -40,19 +45,19 @@ class QuayCrane extends DrawUserComponent {
 
     constructor(props: any){
         super(props);
-        console.log(props.name);
+        GeneralLogger.debug(props.name);
         this._drawAreaRef = React.createRef();
-        this._drawAreaRef2 = React.createRef();
+        //this._drawAreaRef2 = React.createRef();
     }
 
     handler(drawArea: BaseDrawArea, args: DrawCanvasEventArgs): void {
-        console.log(args.selectionList);
+        GeneralLogger.debug(args.selectionList);
     }
 
     componentDidMount() {
         const drawArea = this._drawAreaRef.current;
-        const drawArea2 = this._drawAreaRef2.current;
-        if (drawArea && drawArea2) {
+
+        if (drawArea) {
             super.setDrawArea(drawArea);
             drawArea.setWidth(1500);
             drawArea.setHeight(1500);
@@ -61,12 +66,6 @@ class QuayCrane extends DrawUserComponent {
             drawArea.isDrawableObjectMouseOver = true;
             drawArea.setArrangeDirection(ArrangeDirection.None);
             drawArea.arrangeFixCount = 2;
-            
-            drawArea2.isDrawableObjectResize = true;
-            drawArea2.isDrawableObjectMove = true;
-            drawArea2.isDrawableObjectMouseOver = true;
-            drawArea2.setArrangeDirection(ArrangeDirection.None);
-            drawArea2.drawableObjectClick.addEvent(this.handler.bind(this));
             
             const qcItem = new QCSideItem("QC01");
             qcItem.backColor = Color.Green();
@@ -146,7 +145,7 @@ class QuayCrane extends DrawUserComponent {
             crane.updateMBR();
             crane.enableResizable = true;
             crane.enableMouseOver = true;
-            drawArea.addDrawableObject(crane);
+            //drawArea.addDrawableObject(crane);
 
             qcItem.name = "QC02";
             const crane2 = new TCrane(qcItem);
@@ -156,7 +155,7 @@ class QuayCrane extends DrawUserComponent {
             crane2.updateMBR();
             crane2.enableResizable = true;
             crane2.enableMouseOver = true;
-            drawArea.addDrawableObject(crane2);
+            //drawArea.addDrawableObject(crane2);
 
             qcItem.name = "QC02";
             const crane3 = new TCrane(qcItem);
@@ -166,20 +165,45 @@ class QuayCrane extends DrawUserComponent {
             crane3.updateMBR();
             crane3.enableResizable = true;
             crane3.enableMouseOver = true;
-            drawArea2.addDrawableObject(crane3);
+            //drawArea2.addDrawableObject(crane3);
 
-            const text = new DrawText("text");
-            text.attribute.fontSize = 40;
-            text.attribute.isOutLine = true;
-            text.attribute.outLineColor = Color.Red();
-            text.attribute.textOutLineColor = Color.Red();
-            text.attribute.textOutLineThick = 1;
-            text.text = "QC01";
+            // const points: Point[] = [];
+            // points.push(new Point(50, 50));
+            // points.push(new Point(150, 0));
+            // points.push(new Point(250, 50));
+            // points.push(new Point(200, 100));
+            // points.push(new Point(100, 100));
+            // const drawPolygon = new DrawPolygon("name", points);
+            // drawPolygon.attribute.radiusEdge = true;
+            // drawPolygon.attribute.lineThick = 20;
+            // drawPolygon.attribute.lineAlign = LineAlignment.Inset;
+            // drawPolygon.attribute.fillColor = Color.Green();
+            // crane2.addGeomObject(drawPolygon);
 
-            const container = new EmptyContainer("container");
-            container.addGeomObject(text);
-            container.updateMBR();
-            //canvas.addDrawableObject(container);
+            const geomRec = new GeometryEllipse("name", 50, 50, 100, 100);
+            geomRec.attribute.lineThick = 10;
+            geomRec.attribute.lineAlign = LineAlignment.Inset;
+            geomRec.attribute.fillColor = Color.Green();
+            geomRec.enableResizable = true;
+            drawArea.addDrawableObject(geomRec);
+
+            const geomTri = new GeometryTriangle("name1", 150, 150, 100, 100);
+            geomTri.attribute.radiusEdge = true;
+            geomTri.attribute.lineThick = 10;
+            geomTri.attribute.lineAlign = LineAlignment.Center;
+            geomTri.attribute.fillColor = Color.Green();
+            geomTri.enableResizable = true;
+            drawArea.addDrawableObject(geomTri);
+
+            // const drawTri = new DrawRectangle("name2");
+            // drawTri.setLocation(new Point(200, 200));
+            // drawTri.setSize(new Size(200, 200));
+            // drawTri.attribute.radiusEdge = true;
+            // drawTri.attribute.lineThick = 10;
+            // drawTri.attribute.lineAlign = LineAlignment.Center;
+            // drawTri.attribute.fillColor = Color.Green();
+            // crane2.addGeomObject(drawTri);
+            // drawArea.setPageScale(2);
         }
     }
 
@@ -200,6 +224,9 @@ class QuayCrane extends DrawUserComponent {
         geomRectangle.setLocation(new Point(parseInt(this.state.x.toString()), parseInt(this.state.y.toString())));
         geomRectangle.enableResizable = true;
         geomRectangle.rotate(parseInt(this.state.rotate.toString()));
+        geomRectangle.attribute.fillColor = Color.Blue();
+        geomRectangle.attribute.lineThick = 10;
+        geomRectangle.attribute.lineAlign = LineAlignment.Outset;
         super.getDrawArea().addDrawableObject(geomRectangle);
     }
 
@@ -208,26 +235,34 @@ class QuayCrane extends DrawUserComponent {
         geomPolygon.enableResizable = true;
         geomPolygon.rotate(parseInt(this.state.rotate.toString()));
         geomPolygon.movePoint(new Point(parseInt(this.state.x.toString()), parseInt(this.state.y.toString())));
+        geomPolygon.attribute.fillColor = Color.Blue();
+        geomPolygon.attribute.lineThick = 10;
+        geomPolygon.attribute.lineAlign = LineAlignment.Center;
         super.getDrawArea().addDrawableObject(geomPolygon);
     }
 
     render() {
         return (
-            <div>
-                X: <input type="inputX" onChange={this.onInputXChange.bind(this)} style={{width: '50px'}}/>&nbsp;
-                Y: <input type="inputY" onChange={this.onInputYChange.bind(this)} style={{width: '50px'}}/>&nbsp;
-                Rotate: <input type="inputRotate" onChange={this.onInputRotateChange.bind(this)} style={{width: '50px'}}/><br/>
+            <div id='parent' style={{
+                maxHeight:'512px',
+                maxWidth:'512px',
+                overflow:'auto'
+                }}>
+                X: <input id="inputX" onChange={this.onInputXChange.bind(this)} style={{width: '50px'}}/>&nbsp;
+                Y: <input id="inputY" onChange={this.onInputYChange.bind(this)} style={{width: '50px'}}/>&nbsp;
+                Rotate: <input id="inputRotate" onChange={this.onInputRotateChange.bind(this)} style={{width: '50px'}}/><br/>
                 <button id="addRec" onClick={this.onAddRectangleClick.bind(this)}>Add Rectangle</button>&nbsp;
                 <button id="addPolygon" onClick={this.onAddPolygonClick.bind(this)}>Add Polygon</button><br/>
+                
                 <DrawArea ref={this._drawAreaRef} />
-                <DrawArea ref={this._drawAreaRef2} />
+                {/* <DrawArea ref={this._drawAreaRef2} /> */}
             </div>
         );
     }
 }
 
 const QCSide = ({match}: any) => {
-    //console.log(match);
+    //GeneralLogger.debug(match);
     return (
         <div>
             <QuayCrane name = 'hi, it`s qcside page'/>
